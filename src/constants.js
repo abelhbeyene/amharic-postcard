@@ -1,0 +1,3 @@
+export const NEW_USER = 'NEW_USER'
+export const NEW_USER_SUBMITTED = 'NEW_USER_SUBMITTED'
+export const LINKED_USER = 'LINKED_USER'

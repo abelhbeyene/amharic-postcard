@@ -1,0 +1,38 @@
+/* body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+
+.app {
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.linked-user {
+    min-height: 75vh;
+    min-width: 100%;
+    font-size: 23px;
+    color:#fff;
+    background: rgb(255, 41, 41) url('/static/image1.jpg') no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.linked-user__wrap {
+    vertical-align: middle;
+    text-align: center;
+} */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    text-align: center;
+}
+.app {
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+}
