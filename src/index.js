@@ -1,19 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
 
 const theme = getMuiTheme({
-    palette: {
-      type: 'dark', // Switching the dark mode on is a single property value change.
+    appBar: {
+        color: 'black', // Switching the dark mode on is a single property value change.
     },
-  });
+    "palette": {
+        "primary1Color": "#d32f2f"
+    }
+});
 
 const WrappedApp = () => (
-    <MuiThemeProvider theme={theme}>
+    <MuiThemeProvider muiTheme={theme}>
         <App />
     </MuiThemeProvider>
 )

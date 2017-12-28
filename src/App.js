@@ -1,39 +1,27 @@
 import React, { Component } from 'react'
 import logo from './logo.svg'
-import { Card, CardActions, CardHeader, CardMedia, CardTitle, AppBar, FlatButton, TextField, RaisedButton } from 'material-ui';
 import * as C from './constants'
-import Share from './Share'
+import NewUser from './comps/NewUser'
+import LinkedUser from './comps/LinkedUser'
+import { Card, CardActions, CardHeader, CardMedia, CardTitle, AppBar, FlatButton, TextField, RaisedButton } from 'material-ui';
 
-const LinkedUser = (props) => {
-    return (
-        <div className="linked-user">
-            <Card>
-                <CardMedia
-                    overlay={<CardTitle title={props.user} subtitle={props.message} />}
-                >
-                    <img src="/static/image1.jpg" alt="" />
-                </CardMedia>
-            </Card>
-        </div>
-    )
-}
+const scrollTo = (element, to, duration) => {
+    if (duration <= 0) return;
+    var difference = to - element.scrollTop;
+    var perTick = difference / duration * 10;
 
-const NewUser = (props) => {
-    return (
-        <div>
-            <input type="text" placeholder="Name/ስም" /> <br />
-            <textarea name="" id="" cols="30" rows="10" placeholder="Message/መልእክት"></textarea>
-            <button>Preview</button>
-        </div>
-    )
-
+    setTimeout(function() {
+        element.scrollTop = element.scrollTop + perTick;
+        if (element.scrollTop === to) return;
+        scrollTo(element, to, duration - 10);
+    }, 10);
 }
 
 class App extends Component {
     constructor() {
         super()
         this.state = {
-            newUser: C.NEW_USER,
+            userState: C.NEW_USER,
             user: '',
             message: '',
             share: false
@@ -43,6 +31,7 @@ class App extends Component {
         this.setDocumentTitle = this.setDocumentTitle.call(this)
         this.generateCard = this.generateCard.bind(this)
         this.onShareClick = this.onShareClick.bind(this)
+        this.onCreateNew = this.onCreateNew.bind(this)
     }
 
     setDocumentTitle() {
@@ -74,6 +63,7 @@ class App extends Component {
     generateCard(e) {
         e.preventDefault()
         const { user, message } = e.target
+        
         // switch(true) {
         //     case (!user.value.length):
         //         alert('Enter a name')    
@@ -88,6 +78,7 @@ class App extends Component {
             user: user.value || 'Name/ስም',
             message: message.value || 'Message/መልእክት'
         })
+        scrollTo(window.document.body, e.target.preview.offsetTop, 300)
 
         // window.history.replaceState(null, null, `/?user=${user.value}&message=${message.value}`)
     }
@@ -99,43 +90,27 @@ class App extends Component {
         })
     }
 
+    onCreateNew() {
+        this.setState({
+            userState: C.NEW_USER
+        })
+    }
+
+
+
     render() {
         const { userState, user, message, share } = this.state
         return (
             <div>
-                <header className="mdc-toolbar">
+                <div className="app">
                     <AppBar
                         title="Send your best wishes"
-                        iconElementRight={<FlatButton label="Create your own" />}
-                        className="mdc-app-bar--theme-dark"
+                        iconElementRight={<FlatButton onClick={this.onCreateNew} label="Create your own" />}
                     />
-                </header>
-                <div className="app">
                     {userState !== C.LINKED_USER ?
-                        <div>
-                            <form onSubmit={this.generateCard}>
-                                <TextField
-                                    floatingLabelText="To name/ስም"
-                                    name="user"
-                                /><br />
-                                <TextField
-                                  floatingLabelText="Message/መልእክት"
-                                  multiLine={true}
-                                  name="message"
-                                  rows={3}
-                                /><br />
-                                <RaisedButton label="PREVIEW" type="submit" primary={true} />
-                            </form>
-                            {userState === C.NEW_USER_SUBMITTED &&
-                                <div>
-                                    <LinkedUser {...this.state} />
-                                    <RaisedButton label="Share/Send" secondary={true} onClick={this.onShareClick} />
-                                    {share && <Share {...this.state} />}
-                                </div>
-                            }
-                        </div>
+                        <NewUser {...this.state} generateCard={this.generateCard} onShareClick={this.onShareClick} scrollTo={scrollTo} />
                         :
-                        <LinkedUser {...this.state} />
+                        <LinkedUser {...this.state} generateCard={this.generateCard} />
                     }
                 </div>
             </div>
