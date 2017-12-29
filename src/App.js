@@ -3,18 +3,28 @@ import logo from './logo.svg'
 import * as C from './constants'
 import NewUser from './comps/NewUser'
 import LinkedUser from './comps/LinkedUser'
-import { Card, CardActions, CardHeader, CardMedia, CardTitle, AppBar, FlatButton, TextField, RaisedButton } from 'material-ui';
+import { Subheader, FlatButton, Toolbar, ToolbarGroup, RaisedButton } from 'material-ui';
 
-const scrollTo = (element, to, duration) => {
-    if (duration <= 0) return;
-    var difference = to - element.scrollTop;
-    var perTick = difference / duration * 10;
+const scrollTo = (elementY, duration) => {
+    var startingY = window.pageYOffset
+    var diff = elementY - startingY
+    var start
 
-    setTimeout(function() {
-        element.scrollTop = element.scrollTop + perTick;
-        if (element.scrollTop === to) return;
-        scrollTo(element, to, duration - 10);
-    }, 10);
+    // Bootstrap our animation - it will get called right before next frame shall be rendered.
+    window.requestAnimationFrame(function step(timestamp) {
+        if (!start) start = timestamp
+        // Elapsed miliseconds since start of scrolling.
+        var time = timestamp - start
+        // Get percent of completion in range [0, 1].
+        var percent = Math.min(time / duration, 1)
+
+        window.scrollTo(0, startingY + diff * percent)
+
+        // Proceed with animation as long as we wanted it to.
+        if (time < duration) {
+            window.requestAnimationFrame(step)
+        }
+    })
 }
 
 class App extends Component {
@@ -30,17 +40,19 @@ class App extends Component {
         this.getParams = this.getParams.call(this)
         this.setDocumentTitle = this.setDocumentTitle.call(this)
         this.generateCard = this.generateCard.bind(this)
-        this.onShareClick = this.onShareClick.bind(this)
         this.onCreateNew = this.onCreateNew.bind(this)
     }
 
+    /**
+     * Dynamic browser title
+     */
     setDocumentTitle() {
         const { user } = this.state
         document.title = user ? `Message for ${user}` : document.title
     }
 
     /**
-     * Update the state for linked users
+     * Linked user?
      */
     getParams() {
         const search = window.location.search.replace('?', '')
@@ -49,7 +61,7 @@ class App extends Component {
         const params = {}
         search.split('&').map((el) => {
             const arr = el.split('=')
-            params[arr[0]] = decodeURI(arr[1])
+            params[arr[0]] = decodeURIComponent(arr[1])
         })
 
         this.state = {
@@ -59,62 +71,49 @@ class App extends Component {
         }
     }
 
-
+    /**
+     * Builds card preview
+     * @param {*object} e 
+     */
     generateCard(e) {
         e.preventDefault()
         const { user, message } = e.target
-        
-        // switch(true) {
-        //     case (!user.value.length):
-        //         alert('Enter a name')    
-        //         return
-        //     case (!message.value.length):
-        //         alert('Enter a message')    
-        //         return
-        // }
-
         this.setState({
             userState: C.NEW_USER_SUBMITTED,
             user: user.value || 'Name/ስም',
             message: message.value || 'Message/መልእክት'
         })
-        scrollTo(window.document.body, e.target.preview.offsetTop, 300)
 
-        // window.history.replaceState(null, null, `/?user=${user.value}&message=${message.value}`)
+        window.history.replaceState(null, null, `/?user=${encodeURI(user.value)}&message=${encodeURI(message.value)}`)
+        scrollTo(e.target.preview.offsetTop, 500)
     }
 
-
-    onShareClick() {
-        this.setState({
-            share: true
-        })
-    }
-
+    /**
+     * Create new card
+     */
     onCreateNew() {
         this.setState({
             userState: C.NEW_USER
         })
     }
 
-
-
     render() {
         const { userState, user, message, share } = this.state
+        const headerMsg = userState === C.LINKED_USER ? `ክ ${user}` : 'New card'
         return (
             <div>
+                <Toolbar style={{ justifyContent: 'center' }}>
+                    <ToolbarGroup style={{ fontSize: '25px' }} firstChild={true}>{headerMsg}</ToolbarGroup>
+                </Toolbar>
                 <div className="app">
-                    <AppBar
-                        title="Send your best wishes"
-                        iconElementRight={<FlatButton onClick={this.onCreateNew} label="Create your own" />}
-                    />
                     {userState !== C.LINKED_USER ?
-                        <NewUser {...this.state} generateCard={this.generateCard} onShareClick={this.onShareClick} scrollTo={scrollTo} />
+                        <NewUser {...this.state} generateCard={this.generateCard} scrollTo={scrollTo} />
                         :
-                        <LinkedUser {...this.state} generateCard={this.generateCard} />
+                        <LinkedUser {...this.state} generateCard={this.generateCard} scrollTo={scrollTo} onCreateNew={this.onCreateNew} />
                     }
                 </div>
             </div>
-        );
+        )
     }
 }
 

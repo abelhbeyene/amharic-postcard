@@ -1,16 +1,25 @@
 import React from 'react'
-import { Card, CardActions, CardHeader, CardMedia, CardTitle, AppBar, FlatButton, TextField, RaisedButton } from 'material-ui';
+import * as C from './../constants'
+import { Card, CardMedia, CardTitle, RaisedButton } from 'material-ui';
 
+/**
+ * Displays the card with messages passed in 
+ * via query param or state
+ * @param {*object} props 
+ */
 const LinkedUser = (props) => {
     return (
         <div className="linked-user">
-            <Card> 
-                <CardMedia
-                    overlay={<CardTitle title={props.user} subtitle={props.message} />}
-                >
-                    <img src="/static/image1.jpg" alt="" />
+            <Card>
+                {/*subtitle={props.message}*/}
+                <CardTitle title={props.message} titleStyle={{}} />
+                <CardMedia>
+                    <img src="/static/image2.jpg" alt="" />
                 </CardMedia>
-            </Card>
+                {props.userState !== C.NEW_USER_SUBMITTED &&
+                    <RaisedButton onClick={props.onCreateNew} label='New +' primary={true} style={{float: 'right'}} fullWidth={true} />
+                }
+                </Card>
         </div>
     )
 }
