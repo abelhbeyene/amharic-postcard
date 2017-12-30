@@ -1,31 +1,12 @@
+// http://localhost:3000/?user=%E1%8A%A0%E1%89%A4%E1%88%8D&message=%E1%88%98%E1%88%8D%E1%8A%AB%E1%88%9D%20%E1%8C%88%E1%8A%93%20%E1%8C%A9%E1%8A%92
+
 import React, { Component } from 'react'
 import logo from './logo.svg'
 import * as C from './constants'
 import NewUser from './comps/NewUser'
 import LinkedUser from './comps/LinkedUser'
-import { Subheader, FlatButton, Toolbar, ToolbarGroup, RaisedButton } from 'material-ui';
-
-const scrollTo = (elementY, duration) => {
-    var startingY = window.pageYOffset
-    var diff = elementY - startingY
-    var start
-
-    // Bootstrap our animation - it will get called right before next frame shall be rendered.
-    window.requestAnimationFrame(function step(timestamp) {
-        if (!start) start = timestamp
-        // Elapsed miliseconds since start of scrolling.
-        var time = timestamp - start
-        // Get percent of completion in range [0, 1].
-        var percent = Math.min(time / duration, 1)
-
-        window.scrollTo(0, startingY + diff * percent)
-
-        // Proceed with animation as long as we wanted it to.
-        if (time < duration) {
-            window.requestAnimationFrame(step)
-        }
-    })
-}
+import { Subheader, FlatButton, Toolbar, ToolbarGroup, RaisedButton, RefreshIndicator } from 'material-ui';
+import { scrollTo, runScriptAsPromise } from './utils'
 
 class App extends Component {
     constructor() {
@@ -34,7 +15,8 @@ class App extends Component {
             userState: C.NEW_USER,
             user: '',
             message: '',
-            share: false
+            share: false,
+            loading: false
         }
 
         this.getParams = this.getParams.call(this)
@@ -56,7 +38,11 @@ class App extends Component {
      */
     getParams() {
         const search = window.location.search.replace('?', '')
-        if (!search) return
+        if (search.indexOf('user=') === -1 && search.indexOf('message') === -1) {
+            // Only init if new user. The rest taken care off on demand
+            this.initKeyman()
+            return
+        }
 
         const params = {}
         search.split('&').map((el) => {
@@ -77,31 +63,63 @@ class App extends Component {
      */
     generateCard(e) {
         e.preventDefault()
-        const { user, message } = e.target
+        let { user, message } = e.target
+        if (!user.value && !message.value) {
+            alert('Enter a name or message!')
+        }
         this.setState({
             userState: C.NEW_USER_SUBMITTED,
             user: user.value || 'Name/ስም',
             message: message.value || 'Message/መልእክት'
         })
 
-        window.history.replaceState(null, null, `/?user=${encodeURI(user.value)}&message=${encodeURI(message.value)}`)
+        const uri = `/?user=${encodeURIComponent(user.value)}&message=${encodeURIComponent(message.value)}`
+        window.history.replaceState(null, null, uri.replace(/ /g, '+'))
         scrollTo(e.target.preview.offsetTop, 500)
+    }
+
+    /**
+     * Initialise Keyman keyboard for each state change that involves input.
+     * Keyman wants to reload Lib EVERY SINGLE TIME :(
+     */
+    initKeyman() {
+        // reset or it won't reload the lib
+        window.tavultesoft = null
+        runScriptAsPromise('https://s.keyman.com/kmw/engine/2.0.473/keymanweb.js')
+            .then(() => {
+                runScriptAsPromise('https://s.keyman.com/kmw/engine/2.0.473/kmwuitoggle.js')
+            })
+            .then(() => {
+                window.tavultesoft.keymanweb.init();
+                window.tavultesoft.keymanweb.addKeyboards('@amh');
+                // this.setState({ loading: false })
+            })
     }
 
     /**
      * Create new card
      */
     onCreateNew() {
+        this.initKeyman()
         this.setState({
             userState: C.NEW_USER
         })
     }
 
     render() {
-        const { userState, user, message, share } = this.state
-        const headerMsg = userState === C.LINKED_USER ? `ክ ${user}` : 'New card'
+        const { userState, user, message, share, loading } = this.state
+        const headerMsg = userState === C.LINKED_USER ? `ከ ${user}` : 'New card'
         return (
             <div>
+                {loading &&
+                    <RefreshIndicator
+                        size={50}
+                        left={50}
+                        top={50}
+                        loadingColor="#FF9800"
+                        status="loading"
+                    />
+                }
                 <Toolbar style={{ justifyContent: 'center' }}>
                     <ToolbarGroup style={{ fontSize: '25px' }} firstChild={true}>{headerMsg}</ToolbarGroup>
                 </Toolbar>

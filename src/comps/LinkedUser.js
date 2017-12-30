@@ -14,7 +14,7 @@ const LinkedUser = (props) => {
                 {/*subtitle={props.message}*/}
                 <CardTitle title={props.message} titleStyle={{}} />
                 <CardMedia>
-                    <img src="/static/image2.jpg" alt="" />
+                    <img src="/static/image1.jpg" alt="" />
                 </CardMedia>
                 {props.userState !== C.NEW_USER_SUBMITTED &&
                     <RaisedButton onClick={props.onCreateNew} label='New +' primary={true} style={{float: 'right'}} fullWidth={true} />
